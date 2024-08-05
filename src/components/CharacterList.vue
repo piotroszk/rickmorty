@@ -5,12 +5,12 @@
         type="text" 
         v-model="name" 
         placeholder="Search by name" 
-        class="border border-green-400 bg-indigo-800 text-green-200 placeholder-green-200 p-2 rounded text-sm sm:text-base w-full sm:w-auto"
+        class="input-field"
       />
       <select 
         v-model="status" 
-        @change="fetchCharacters" 
-        class="border border-green-400 bg-indigo-800 text-green-200 p-2 rounded text-sm sm:text-base w-full sm:w-auto"
+        @change="loadCharacters" 
+        class="input-field"
       >
         <option value="" class="bg-indigo-700">All Statuses</option>
         <option value="alive" class="bg-indigo-700">Alive</option>
@@ -19,7 +19,7 @@
       </select>
       <button 
         @click="resetFilters" 
-        class="text-black p-2 rounded bg-green-400 hover:bg-green-100 text-sm sm:text-base w-full sm:w-auto"
+        class="btn"
       >
         Reset
       </button>
@@ -34,7 +34,7 @@
       <button 
         @click="prevPage" 
         :disabled="page === 1" 
-        class="text-black p-2 rounded bg-green-400 disabled:bg-gray-500 disabled:text-gray-700 hover:bg-green-100 text-sm sm:text-base w-full sm:w-auto"
+        class="btn"
       >
         Previous
       </button>
@@ -42,7 +42,7 @@
       <button 
         @click="nextPage" 
         :disabled="page === maxPage" 
-        class="text-black p-2 rounded bg-green-400 disabled:bg-gray-500 disabled:text-gray-700 hover:bg-green-100 text-sm sm:text-base w-full sm:w-auto"
+        class="btn"
       >
         Next
       </button>
@@ -52,30 +52,25 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
-import axios from 'axios';
 import CharacterCard from './CharacterCard.vue';
+import { Character } from '@/types/characters';
+import { fetchCharacters } from '@/api/api';
 
-const characters = ref<any[]>([]);
-const name = ref('');
-const status = ref('');
-const page = ref(1);
-const maxPage = ref(1);
+const characters = ref<Character[]>([]);
+const name = ref<string>('');
+const status = ref<string>('');
+const page = ref<number>(1);
+const maxPage = ref<number>(1);
 const error = ref<string | null>(null);
 
 let debounceTimeout: ReturnType<typeof setTimeout> | null = null;
 
-const fetchCharacters = async () => {
+const loadCharacters = async () => {
   error.value = null;
   try {
-    const response = await axios.get(`https://rickandmortyapi.com/api/character`, {
-      params: {
-        name: name.value,
-        status: status.value,
-        page: page.value
-      }
-    });
-    characters.value = response.data.results;
-    maxPage.value = response.data.info.pages;
+    const response = await fetchCharacters(name.value, status.value, page.value);
+    characters.value = response.results;
+    maxPage.value = response.info.pages;
   } catch (err) {
     console.error('Failed to fetch characters:', err);
     error.value = 'Failed to load characters. Please try again later.';
@@ -85,7 +80,7 @@ const fetchCharacters = async () => {
 const debouncedFetchCharacters = () => {
   if (debounceTimeout) clearTimeout(debounceTimeout);
   debounceTimeout = setTimeout(() => {
-    fetchCharacters();
+    loadCharacters();
   }, 1000);
 };
 
@@ -93,24 +88,28 @@ const resetFilters = () => {
   name.value = '';
   status.value = '';
   page.value = 1;
-  fetchCharacters();
+  loadCharacters();
 };
 
 const prevPage = () => {
   if (page.value > 1) {
     page.value--;
-    fetchCharacters();
+    loadCharacters();
   }
 };
 
 const nextPage = () => {
   if (page.value < maxPage.value) {
     page.value++;
-    fetchCharacters();
+    loadCharacters();
   }
 };
 
 watch([name, status], debouncedFetchCharacters);
 
-onMounted(fetchCharacters);
+onMounted(loadCharacters);
 </script>
+
+<style>
+@import '@/styles/main.scss';
+</style>

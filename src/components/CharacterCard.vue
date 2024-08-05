@@ -8,12 +8,7 @@
 <script setup lang="ts">
 import { defineProps } from 'vue';
 import { useRouter } from 'vue-router';
-
-interface Character {
-  id: number;
-  image: string;
-  name: string;
-}
+import { Character } from '@/types/characters'
 
 const props = defineProps<{ character: Character }>();
 const router = useRouter();

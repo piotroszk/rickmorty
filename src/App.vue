@@ -6,9 +6,6 @@
 
 <script setup lang="ts"></script>
 
-<style scoped>
-body {
-  background-color: #0a0a0a;
-  color: #f5f5f5;
-}
+<style>
+@import '@/styles/main.scss';
 </style>
