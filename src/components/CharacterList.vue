@@ -105,7 +105,12 @@ const nextPage = () => {
   }
 };
 
-watch([name, status], debouncedFetchCharacters);
+watch(name, (newName) => {
+  page.value = 1; // Reset page to 1 when `name` changes
+  debouncedFetchCharacters();
+});
+
+watch(status, debouncedFetchCharacters);
 
 onMounted(loadCharacters);
 </script>
